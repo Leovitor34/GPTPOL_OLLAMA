@@ -1,0 +1,9 @@
+# Evitar arquivos sensíveis e pastas temporárias
+.env
+*.log
+node_modules
+__pycache__/
+*.pyc
+.clerk/
+venv/
+frontend/.next/
