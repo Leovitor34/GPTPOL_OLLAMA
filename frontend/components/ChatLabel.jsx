@@ -3,54 +3,49 @@ import { useAppContext } from '@/context/AppContext'
 import axios from 'axios'
 import Image from 'next/image'
 import React from 'react'
-import toast from 'react-hot-toast'
 
 const ChatLabel = ({openMenu, setOpenMenu, id, name}) => {
 
-  const {fetchUsersChats, chats, setSelectedChat} = useAppContext()
+  const {fetchUsersChats, selectChat, selectedChat} = useAppContext()
 
-  const selectChat = ()=>{
-    const chatData = chats.find(chat => chat._id === id)
-    setSelectedChat(chatData)
-    console.log(chatData)
+  const handleSelectChat = () => {
+    selectChat(id);
   }
-  const renameHandler = async ()=>{
+
+  const renameHandler = async (e) => {
+    e.stopPropagation();
     try {
       const newName = prompt('Enter new name')
       if(!newName) return 
-      const {data} = await axios.post('/api/chat/rename', {chatId: id, name: newName})
-      if(data.success){
-        fetchUsersChats()
-        setOpenMenu({id: 0, open: false})
-        toast.success(data.message)
-      }else{
-        toast.error(data.message)
-      }
+      await axios.post('/api/chat/rename', {chatId: id, name: newName})
+      fetchUsersChats()
+      setOpenMenu({id: 0, open: false})
     } catch (error) {
-      toast.error(error.message)
+      console.error("Error renaming chat:", error);
     }
   }
 
-  const deleteHandler = async () =>{
+  const deleteHandler = async (e) => {
+    e.stopPropagation();
     try {
       const confirm = window.confirm('Are you sure you want to delete this chat?')
       if(!confirm) return
-      const {data} = await axios.post('/api/chat/delete', {chatId: id })
-      if (data.success){
-        fetchUsersChats()
-        setOpenMenu({ id: 0, open: false })
-        toast.success(data.message)
-      }
-      else{
-        toast.error(data.message)
-      }
+      await axios.post('/api/chat/delete', {chatId: id })
+      fetchUsersChats()
+      setOpenMenu({ id: 0, open: false })
     } catch (error) {
-      toast.error(error.message)
+      console.error("Error deleting chat:", error);
     }
   }
 
+  // Verificar se este chat está selecionado
+  const isSelected = selectedChat && selectedChat._id === id;
+
   return (
-    <div onClick={selectChat} className='flex items-center justify-between p-2 text-white/80 hover:bg-white/10 rounded-lg text-sm group cursor-pointer'>
+    <div 
+      onClick={handleSelectChat} 
+      className={`flex items-center justify-between p-2 text-white/80 hover:bg-white/10 rounded-lg text-sm group cursor-pointer ${isSelected ? 'bg-white/20' : ''}`}
+    >
       <p className='group-hover:max-w-5/6 truncate'>{name}</p>
       <div onClick={e=>{e.stopPropagation();setOpenMenu({id: id, open: !openMenu.open})}}
        className='group relative flex items-center justify-center h-6 w-6 aspect-square hover:bg-black/80 rounded-lg'>

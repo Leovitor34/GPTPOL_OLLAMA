@@ -17,7 +17,7 @@ export default function Home() {
 
   useEffect(()=>{
     if(selectedChat){
-      setMessages(selectedChat.messages)
+      setMessages(selectedChat?.messages || [])
     }
   },[selectedChat])
 
@@ -30,8 +30,6 @@ export default function Home() {
     }
   },[messages])
 
-
-
   return (
     <div>
       <div className="flex h-screen">
@@ -43,13 +41,13 @@ export default function Home() {
             <Image className="opacity-70" src={assets.chat_icon} alt=""/>
           </div>
 
-          {messages.length === 0 ? (
+          {!selectedChat || messages.length === 0 ? (
             <>
             <div className="flex items-center gap-3">
               <Image src={assets.logo_icon} alt="" className="h-16"/>
-              <p className="text-2xl font-medium">GPTPOL pronto! Está no QAP?</p>
+              <p className="text-2xl font-medium">Hi, I'm DeepSeek.</p>
             </div>
-            <p className="text-sm mt-2">Como eu posso te ajudar hoje?</p>
+            <p className="text-sm mt-2">How can I help you today?</p>
             </>
           ):
           (
@@ -58,7 +56,12 @@ export default function Home() {
           > 
           <p className="fixed top-8 border border-transparent hover:border-gray-500/50 py-1 px-2 rounded-lg font-semibold mb-6">{selectedChat.name}</p>
           {messages.map((msg, index)=>(
-            <Message key={index} role={msg.role} content={msg.content}/>
+            <Message 
+              key={index} 
+              role={msg.role} 
+              content={msg.content} 
+              processingTime={msg.processingTime}
+            />
           ))}
           {
             isLoading && (

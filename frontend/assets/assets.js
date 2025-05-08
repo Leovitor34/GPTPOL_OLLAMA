@@ -23,6 +23,14 @@ import qrcode from "./qrcode.png";
 import three_dots from "./three_dots.svg";
 import new_icon from "./new_icon.svg";
 
+// Ícones adicionais para upload de arquivos
+import upload_icon from "./upload_icon.svg";
+import file_icon from "./file_icon.svg";
+import pdf_icon from "./pdf_icon.svg";
+import doc_icon from "./doc_icon.svg";
+import excel_icon from "./excel_icon.svg";
+import attachment_icon from "./attachment_icon.svg";
+
 export const assets = {
   arrow_icon,
   arrow_icon_dull,
@@ -48,4 +56,12 @@ export const assets = {
   qrcode,
   three_dots,
   new_icon,
+  
+  // Ícones de arquivos
+  upload_icon,
+  file_icon,
+  pdf_icon,
+  doc_icon,
+  excel_icon,
+  attachment_icon,
 };

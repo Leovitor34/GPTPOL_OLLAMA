@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "GPTPOL",
-  description: "Sistema de inteligência artificial para auxílio do trabalho de Polícia Judiciária",
+  title: "DeepSeek - GreatStack",
+  description: "Full Stack Project",
 };
 
 export default function RootLayout({ children }) {

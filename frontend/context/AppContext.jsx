@@ -11,63 +11,159 @@ export const useAppContext = ()=>{
 }
 
 export const AppContextProvider = ({children})=>{
-    const {user} = useUser()
-    const {getToken} = useAuth()
+    const {user, isLoaded: isUserLoaded} = useUser()
+    const {getToken, isSignedIn} = useAuth()
 
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [authInitialized, setAuthInitialized] = useState(false);
 
     const createNewChat = async ()=>{
         try {
-            if(!user) return null;
+            if(!isSignedIn) return null;
+            setIsLoading(true);
 
             const token = await getToken();
+            
+            if (!token) return null;
 
-            await axios.post('/api/chat/create', {}, {headers:{
-                Authorization: `Bearer ${token}`
-            }})
-
-            fetchUsersChats();
-        } catch (error) {
-            toast.error(error.message)
-        }
-    }
-
-    const fetchUsersChats = async ()=>{
-        try {
-            const token = await getToken();
-            const {data} = await axios.get('/api/chat/get', {headers:{
-                Authorization: `Bearer ${token}`
-            }})
-            if(data.success){
-                console.log(data.data);
-                setChats(data.data)
-
-                 // If the user has no chats, create one
-                 if(data.data.length === 0){
-                    await createNewChat();
-                    return fetchUsersChats();
-                 }else{
-                    // sort chats by updated date
-                    data.data.sort((a, b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
-
-                     // set recently updated chat as selected chat
-                     setSelectedChat(data.data[0]);
-                     console.log(data.data[0]);
-                 }
-            }else{
-                toast.error(data.message)
+            // Criar localmente um novo chat se a API falhar
+            const localChat = {
+                _id: `local-${Date.now()}`,
+                userId: user?.id || 'guest',
+                messages: [],
+                name: "Novo Chat",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                const response = await axios.post('/api/chat/create', {}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                
+                if (response.data && response.data.success) {
+                    // Se a API responder com sucesso, usar o chat retornado
+                    const newChat = response.data.data || localChat;
+                    setChats(prevChats => [newChat, ...prevChats]);
+                    setSelectedChat(newChat);
+                    return newChat;
+                } else {
+                    // Se a API responder com erro, usar o chat local
+                    setChats(prevChats => [localChat, ...prevChats]);
+                    setSelectedChat(localChat);
+                    return localChat;
+                }
+            } catch (error) {
+                // Se a API falhar, usar o chat local
+                setChats(prevChats => [localChat, ...prevChats]);
+                setSelectedChat(localChat);
+                return localChat;
             }
         } catch (error) {
-            toast.error(error.message)
+            console.error("Erro ao criar chat:", error);
+            return null;
+        } finally {
+            setIsLoading(false);
         }
     }
 
- useEffect(()=>{
-    if(user){
-        fetchUsersChats();
+    const fetchUsersChats = async (forceFetch = false)=>{
+        try {
+            if (!isSignedIn) return;
+            if (isLoading && !forceFetch) return;
+            
+            setIsLoading(true);
+            const token = await getToken();
+            
+            if (!token) {
+                return;
+            }
+
+            try {
+                const response = await axios.get('/api/chat/get', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                
+                const data = response.data || {};
+                
+                if(data.success && data.data){
+                    // Se houver dados, usar os dados retornados
+                    if(data.data.length === 0){
+                        // Se não houver chats, criar um novo
+                        await createNewChat();
+                    } else {
+                        // Ordenar chats por data de atualização (mais recente primeiro)
+                        const sortedChats = [...data.data].sort(
+                            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+                        );
+                        
+                        setChats(sortedChats);
+                        
+                        // Selecionar o chat mais recente se nenhum chat estiver selecionado
+                        if (!selectedChat || !sortedChats.find(chat => chat._id === selectedChat._id)) {
+                            setSelectedChat(sortedChats[0]);
+                        }
+                    }
+                } else {
+                    // Se a API retornar erro, criar um chat local
+                    if (chats.length === 0) {
+                        await createNewChat();
+                    }
+                }
+            } catch (error) {
+                // Se a API falhar, verificar se já temos chats ou criar um novo
+                if (chats.length === 0) {
+                    await createNewChat();
+                }
+            }
+        } catch (error) {
+            // Erro silencioso
+        } finally {
+            setIsLoading(false);
+        }
     }
- }, [user])
+
+    // Selecionar um chat existente
+    const selectChat = (chatId) => {
+        const chat = chats.find(c => c._id === chatId);
+        if (chat) {
+            setSelectedChat(chat);
+        }
+    }
+
+    // Verificar se o usuário está autenticado e inicializar
+    useEffect(() => {
+        if (isUserLoaded) {
+            if (isSignedIn) {
+                if (!authInitialized) {
+                    fetchUsersChats(true);
+                    setAuthInitialized(true);
+                }
+            } else {
+                // Limpar chats quando o usuário faz logout
+                setChats([]);
+                setSelectedChat(null);
+                setAuthInitialized(false);
+            }
+        }
+    }, [isUserLoaded, isSignedIn]);
+
+    // Atualizar periodicamente para manter os dados sincronizados
+    useEffect(() => {
+        if (isSignedIn && authInitialized) {
+            const interval = setInterval(() => {
+                fetchUsersChats();
+            }, 30000); // Atualizar a cada 30 segundos
+            
+            return () => clearInterval(interval);
+        }
+    }, [isSignedIn, authInitialized]);
 
     const value = {
         user,
@@ -76,7 +172,10 @@ export const AppContextProvider = ({children})=>{
         selectedChat,
         setSelectedChat,
         fetchUsersChats,
-        createNewChat
+        createNewChat,
+        selectChat,
+        isLoading,
+        isSignedIn
     }
     
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>

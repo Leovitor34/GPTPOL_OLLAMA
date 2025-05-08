@@ -6,3 +6,8 @@ pandas
 openai==1.7.0
 sqlalchemy
 configparser
+pypdf2
+python-docx
+openpyxl
+python-multipart
+aiohttp

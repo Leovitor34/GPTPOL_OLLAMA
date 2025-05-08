@@ -1,0 +1,1 @@
+// Este componente não é mais necessário, pois a funcionalidade foi incorporada diretamente no Message.jsx 

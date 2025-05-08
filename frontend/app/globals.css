@@ -1,21 +1,170 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@theme {
-  --color-primary: #4d6bfe;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
 }
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: 'Inter', sans-serif;
+}
+
+/* Estilos para realçar termos jurídicos */
+.response-content strong,
+.response-content b {
+  @apply font-semibold text-white;
+}
+
+/* Estilo para citações e parágrafos entre aspas */
+.response-content p em,
+.response-content blockquote p {
+  @apply italic text-[#E1E1E1];
+}
+
+/* Melhorar o contraste do texto */
+.response-content {
+  @apply text-[#f0f0f0] leading-relaxed max-w-3xl mx-auto text-left;
+}
+
+.response-content h1, 
+.response-content h2, 
+.response-content h3, 
+.response-content h4 {
+  @apply text-white font-semibold my-3;
+}
+
+.response-content p {
+  @apply my-2;
+}
+
+.response-content ul {
+  @apply list-disc pl-5 my-2;
+}
+
+.response-content ol {
+  @apply list-decimal pl-5 my-2;
+}
+
+/* Barra lateral - modificada para ser cinza escuro e não azul */
+.thinking-bar {
+  width: 3px;
+  margin-right: 10px;
+  border-radius: 2px;
+  background: #555555 !important; /* Cinza escuro sólido */
+  animation: pulse-bar 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-bar {
+  0%, 100% { opacity: 0.3; height: 60%; }
+  50% { opacity: 0.5; height: 70%; }
+}
+
+/* Estilos para realçar código */
+.response-content pre {
+  @apply bg-[#1e1e2d] rounded-md p-4 my-4 overflow-x-auto text-sm;
+}
+
+.response-content code {
+  @apply bg-[#1e1e2d] px-1 py-0.5 rounded-md text-[#f1f1f1] text-sm;
+}
+
+/* Estilos para o modo de pensamento */
+.thought-panel {
+  @apply bg-[#1e1e1e] rounded-md mb-4;
+}
+
+/* Estilo para o texto do pensamento - aplicado tanto durante a digitação quanto após */
+.thinking-text {
+  color: #777777 !important;
+  font-style: italic !important;
+  font-weight: 300 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  opacity: 0.8 !important;
+}
+
+/* Estilo direto aplicado a qualquer container que contenha texto do pensamento */
+.markdown-content.thinking-mode,
+.markdown-content.thinking-mode p,
+.markdown-content.thinking-mode span,
+.markdown-content.thinking-mode div {
+  color: #777777 !important;
+  font-style: italic !important;
+  font-weight: 300 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  opacity: 0.8 !important;
+}
+
+/* Estilo para o botão de pensamento - mais discreto como na segunda imagem */
+.thought-button {
+  background-color: #333 !important;
+  color: #999 !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+}
+
+.thought-content {
+  @apply px-4 py-3 text-[#888888] text-sm italic font-light;
+}
+
+@import "tailwindcss";
 
 html{
   @apply scroll-smooth;
 }
 
 ::-webkit-scrollbar{
-  display: none;
+  width: 3px;
 }
-.loader div:nth-child(2){
-  animation-delay: 0.2s;
+
+::-webkit-scrollbar-track{
+  background-color: #2b2b2b;
 }
-.loader div:nth-child(3){
-  animation-delay: 0.4s;
+
+::-webkit-scrollbar-thumb{
+  background-color: #5b5b5b;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.thought-icon-pulse {
+  animation: pulse 2s ease-in-out infinite;
 }
 
 code{
@@ -24,4 +173,12 @@ code{
 
 pre{
   border-radius: 10px !important;
+}
+
+.loader div:nth-child(2){
+  animation-delay: 0.2s;
+}
+
+.loader div:nth-child(3){
+  animation-delay: 0.4s;
 }
